@@ -1,6 +1,6 @@
-import { createPCMBlob } from '@/lib/audioUtils';
+import { base64ToUnit8Array, createPCMBlob, decodeAudioData } from '@/lib/audioUtils';
 import { INPUT_SAMPLE_RATE, MODEL, OUTPUT_SAMPLE_RATE } from '@/lib/constants';
-import { GoogleGenAI, Modality, Session } from '@google/genai';
+import { GoogleGenAI, LiveServerMessage, Modality, Session } from '@google/genai';
 
 
 export class LiveAudioManager {
@@ -13,6 +13,8 @@ export class LiveAudioManager {
     private mediaStream : MediaStream | null = null
     private workletNode: AudioWorkletNode | null = null
     private inputSource: MediaStreamAudioSourceNode | null = null
+    private nextStartTime = 0;
+    private sources= new Set<AudioBufferSourceNode>();
     constructor() {
         this.ai = new GoogleGenAI({
                  apiKey:process.env.NEXT_PUBLIC_GEMINI_API_KEY
@@ -31,7 +33,8 @@ export class LiveAudioManager {
         config: config,
         callbacks: {
             onopen: () => console.log("Connected to Gemini "),
-            onmessage: (message) => console.log("message Gemini ", message),
+            onmessage:  this.handleMessage.bind(this),
+            
             onerror: (e) => console.log("Error Gemini ", e.message),
             onclose: (e) => console.log("Close  Gemini ", e.reason),
         }
@@ -92,6 +95,64 @@ export class LiveAudioManager {
         );
 
     this.inputSource.connect(this.workletNode);
+
+    }
+
+
+    async handleMessage(message: LiveServerMessage){
+       const serverContent = message.serverContent;
+
+       if (serverContent?.interrupted) {
+         this.stopAllAudio();
+       }
+
+       const base64Data = serverContent?.modelTurn?.parts?.[0].inlineData?.data;
+
+       if (!base64Data) return
+      await this.playAudioChunk(base64Data as string)
+
+        
+    }
+
+    async playAudioChunk(audioData: string){
+   const uintData = base64ToUnit8Array(audioData);
+
+   if (!this.outputAudioContext || !this.outputNode) return
+
+  const audioBuffer = await decodeAudioData(uintData, this.outputAudioContext, OUTPUT_SAMPLE_RATE,1 )
+
+  if (this.nextStartTime < this.outputAudioContext.currentTime) {
+    this.nextStartTime = this.outputAudioContext.currentTime
+  }
+
+
+  const source = this.outputAudioContext?.createBufferSource();
+  source.buffer = audioBuffer;
+    source.connect(this.outputNode);
+
+    source.start(this.nextStartTime);
+    this.nextStartTime += audioBuffer.duration
+
+    source.addEventListener('ended', () => {
+        this.sources.delete(source)
+    })
+
+    this.sources.add(source)
+
+    };  
+    
+    async stopAllAudio(){
+         this.sources.forEach((source) => {
+          try {
+            source.stop();
+          } catch  {}
+         });
+
+         this.sources.clear();
+
+         if (this.outputAudioContext) {
+            this.nextStartTime =  this.outputAudioContext?.currentTime;   
+         }
 
     }
 }
