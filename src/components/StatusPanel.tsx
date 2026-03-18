@@ -1,12 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useAudioStore } from "@/store/useAudioStore";
+import { ConnectionState } from "@/types";
 import { AlertCircle } from "lucide-react";
 
 function StatusPanel() {
-  const isConnected = true;
-  const isConnecting = false;
-  const error = false;
+  const {connectionState,error} = useAudioStore();
+  const isConnected = connectionState === ConnectionState.CONNECTED;
+  const isConnecting = connectionState === ConnectionState.CONNECTING
+  
 
   return (
     <div className="absolute top-4 sm:top-6 left-0 right-0 flex flex-col items-center gap-3 z-20 pointer-events-none px-4">

@@ -16,13 +16,14 @@ import {
   MicSelectorValue,
 } from "@/components/ai-elements/mic-selector";
 import { useAudioStore } from "@/store/useAudioStore";
+import { ConnectionState } from "@/types";
 
 function ControlsPanel() {
   const [selectedDevice, setSelectedDevice] = useState<string | undefined>(undefined);
-  const { connect } = useAudioStore();
-  const isConnected = false;
-  const isConnecting = false;
-  const isMuted = false;
+  const { connect, connectionState, toggleMute, isMuted } = useAudioStore();
+  const isConnected = connectionState === ConnectionState.CONNECTED;
+  const isConnecting = connectionState === ConnectionState.CONNECTING
+
 
   return (
     <div className="w-full max-w-[92vw] sm:max-w-fit mx-auto">
@@ -75,7 +76,7 @@ function ControlsPanel() {
         <div className="flex items-center gap-2 shrink-0">
           {isConnected && (
             <Button
-              onClick={() => {}}
+              onClick={toggleMute}
               variant="secondary"
               size="icon"
               className={cn(

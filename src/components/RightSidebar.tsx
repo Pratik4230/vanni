@@ -13,12 +13,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cleanText } from "@/lib/utils";
 import SidebarHeader from "./SidebarHeader";
+import { useAudioStore } from "@/store/useAudioStore";
 
 function RightSidebar() {
-  const items: { text: string; isPartial: boolean; sender: string }[] = [
-    { text: "Hii", isPartial: false, sender: "user" },
-    { text: "I'm Vanni AI Assistant", isPartial: false, sender: "assistant" },
-  ];
+  const {transcript: items} = useAudioStore()
+  // const items: { text: string; isPartial: boolean; sender: string }[] = [
+  //   { text: "Hii", isPartial: false, sender: "user" },
+  //   { text: "I'm Vanni AI Assistant", isPartial: false, sender: "assistant" },
+  // ];
 
   return (
     <aside className="flex h-full w-full flex-col bg-sidebar text-sidebar-foreground">

@@ -1,5 +1,6 @@
 import { base64ToUnit8Array, createPCMBlob, decodeAudioData } from '@/lib/audioUtils';
 import { INPUT_SAMPLE_RATE, MODEL, OUTPUT_SAMPLE_RATE } from '@/lib/constants';
+import { ConnectionState, LiveManagerCallbacks } from '@/types';
 import { GoogleGenAI, LiveServerMessage, Modality, Session } from '@google/genai';
 
 
@@ -15,87 +16,112 @@ export class LiveAudioManager {
     private inputSource: MediaStreamAudioSourceNode | null = null
     private nextStartTime = 0;
     private sources= new Set<AudioBufferSourceNode>();
-    constructor() {
+    private callbacks : LiveManagerCallbacks;
+    private isMuted: boolean;
+
+    private inputTranscription = "";
+    private outputTranscription =""
+
+    constructor(callbacks: LiveManagerCallbacks) {
         this.ai = new GoogleGenAI({
                  apiKey:process.env.NEXT_PUBLIC_GEMINI_API_KEY
-        })
+        });
+
+        this.callbacks = callbacks
     }
 
     async startSession(){
-    console.log("Starting Session")
+   try {
+     console.log("Starting Session")
+ 
+     this.callbacks.onStateChange(ConnectionState.CONNECTING);
+ 
+    const config = { responseModalities: [Modality.AUDIO],
+      systemInstruction: "You are a helpful and friendly AI assistant.",
+       inputAudioTranscription: {},
+      outputAudioTranscription: {}
 
-   const config = { responseModalities: [Modality.AUDIO],
-     systemInstruction: "You are a helpful and friendly AI assistant."
-    };
-
-    this.activeSession = await this.ai.live.connect({
-        model: MODEL ,
-        config: config,
-        callbacks: {
-            onopen: () => console.log("Connected to Gemini "),
-            onmessage:  this.handleMessage.bind(this),
-            
-            onerror: (e) => console.log("Error Gemini ", e.message),
-            onclose: (e) => console.log("Close  Gemini ", e.reason),
-        }
-    })
-
-    this.inputAudioContext = new AudioContext({
-        sampleRate: INPUT_SAMPLE_RATE
-    })
-        this.outputAudioContext = new AudioContext({
-            sampleRate: OUTPUT_SAMPLE_RATE
-        })
-
-
-        if (this.inputAudioContext.state === "suspended") {
-            this.inputAudioContext.resume()
-        }
-
-         if (this.outputAudioContext.state === "suspended") {
-            this.outputAudioContext.resume()
-        }
-
-        this.outputNode = this.outputAudioContext.createGain();
-        this.outputNode.connect(
-            this.outputAudioContext.destination,
-        );
-
-        await this.inputAudioContext.audioWorklet.addModule(
-            "/worklets/mic-processor.js",
-        );
-
-        this.workletNode = new AudioWorkletNode(
-            this.inputAudioContext, "mic-processor"
-        );
-
-
-        this.workletNode.port.onmessage = (event) => {
-            const pcmBlob = createPCMBlob(
-                event.data as Float32Array
-            );
-
-            this.activeSession?.sendRealtimeInput({
-                audio: pcmBlob
-            });
-        };
-
-        this.mediaStream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-                sampleRate: INPUT_SAMPLE_RATE,
-                channelCount: 1,
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true
-            }
-        });
-
-     this.inputSource = this.inputAudioContext.createMediaStreamSource(
-            this.mediaStream
-        );
-
-    this.inputSource.connect(this.workletNode);
-
+     };
+ 
+     this.activeSession = await this.ai.live.connect({
+         model: MODEL ,
+         config: config,
+         callbacks: {
+             onopen: () => {
+                 this.callbacks.onStateChange(ConnectionState.CONNECTED);
+             },
+ 
+             onmessage:  this.handleMessage.bind(this),
+             
+             onerror: (e) => {
+                   this.callbacks.onStateChange(ConnectionState.ERROR);
+                   this.callbacks.onError("Could not connect")
+             },
+             onclose: (e) => console.log("Close  Gemini ", e.reason),
+         }
+     })
+ 
+     this.inputAudioContext = new AudioContext({
+         sampleRate: INPUT_SAMPLE_RATE
+     })
+         this.outputAudioContext = new AudioContext({
+             sampleRate: OUTPUT_SAMPLE_RATE
+         })
+ 
+ 
+         if (this.inputAudioContext.state === "suspended") {
+             this.inputAudioContext.resume()
+         }
+ 
+          if (this.outputAudioContext.state === "suspended") {
+             this.outputAudioContext.resume()
+         }
+ 
+         this.outputNode = this.outputAudioContext.createGain();
+         this.outputNode.connect(
+             this.outputAudioContext.destination,
+         );
+ 
+         await this.inputAudioContext.audioWorklet.addModule(
+             "/worklets/mic-processor.js",
+         );
+ 
+         this.workletNode = new AudioWorkletNode(
+             this.inputAudioContext, "mic-processor"
+         );
+ 
+ 
+         this.workletNode.port.onmessage = (event) => {
+             const pcmBlob = createPCMBlob(
+                 event.data as Float32Array
+             );
+ 
+             this.activeSession?.sendRealtimeInput({
+                 audio: pcmBlob
+             });
+         };
+ 
+         this.mediaStream = await navigator.mediaDevices.getUserMedia({
+             audio: {
+                 sampleRate: INPUT_SAMPLE_RATE,
+                 channelCount: 1,
+                 echoCancellation: true,
+                 noiseSuppression: true,
+                 autoGainControl: true
+             }
+         });
+ 
+      this.inputSource = this.inputAudioContext.createMediaStreamSource(
+             this.mediaStream
+         );
+ 
+     this.inputSource.connect(this.workletNode);
+ 
+   } catch(e)  {
+    console.error("Error : ", e)
+      this.callbacks.onStateChange(ConnectionState.ERROR);
+      this.callbacks.onError("Something went wrong")
+   }
     }
 
 
@@ -106,11 +132,34 @@ export class LiveAudioManager {
          this.stopAllAudio();
        }
 
+       if (serverContent?.inputTranscription?.text) {
+        this.inputTranscription += serverContent?.inputTranscription?.text
+        this.callbacks.onTranscript('user',this.inputTranscription, true)
+       }
+
+      if (serverContent?.outputTranscription?.text) {
+                this.outputTranscription += serverContent?.outputTranscription?.text
+        this.callbacks.onTranscript('model', this.outputTranscription, true)
+       }
+
+       if (serverContent?.turnComplete) {
+        if (this.inputTranscription) {
+            this.callbacks.onTranscript('user', this.inputTranscription, false);
+            this.inputTranscription = "";
+        }
+
+         if (this.outputTranscription) {
+            this.callbacks.onTranscript('model', this.outputTranscription, false);
+            this.outputTranscription = "";
+        }
+       }
+
        const base64Data = serverContent?.modelTurn?.parts?.[0].inlineData?.data;
 
        if (!base64Data) return
       await this.playAudioChunk(base64Data as string)
 
+    //   serverContent.inputTranscription()
         
     }
 
@@ -129,6 +178,7 @@ export class LiveAudioManager {
   const source = this.outputAudioContext?.createBufferSource();
   source.buffer = audioBuffer;
     source.connect(this.outputNode);
+    // source.connect(this.outputAudioContext.destination)
 
     source.start(this.nextStartTime);
     this.nextStartTime += audioBuffer.duration
@@ -154,6 +204,14 @@ export class LiveAudioManager {
             this.nextStartTime =  this.outputAudioContext?.currentTime;   
          }
 
+    }
+
+    setMute(isMuted: boolean){
+        this.isMuted = isMuted
+
+        if (this.mediaStream) {
+            this.mediaStream.getAudioTracks().forEach((track)=> track.enabled = !isMuted)
+        }
     }
 }
 

@@ -1,13 +1,17 @@
 import { LiveAudioManager } from "@/services/liveAudioManager";
-import { ConnectionState } from "@/types";
+import { ConnectionState, TranscriptItem } from "@/types";
 import {create} from "zustand";
 import { devtools } from "zustand/middleware";
 
 type AudioStore = {
     connectionState: ConnectionState;
     error: string | null;
-    liveAudioInstance: LiveAudioManager
+    liveAudioInstance: LiveAudioManager;
+    isMuted: boolean
+    transcript: TranscriptItem[]
     connect: () => Promise<void>
+    toggleMute: () => void
+
 };
 
 export const useAudioStore = create<AudioStore>()(
@@ -15,6 +19,13 @@ export const useAudioStore = create<AudioStore>()(
 
 connectionState: ConnectionState.DISCONNECTED,        
 error: null,
+isMuted: false,
+transcript: [],
+toggleMute: () => {
+const state = get();
+set({isMuted: !state.isMuted});
+state.liveAudioInstance.setMute(!state.isMuted);
+},
 liveAudioInstance: null,
      connect: async () => {
 
@@ -38,7 +49,42 @@ liveAudioInstance: null,
        
         let liveAudioManager = state.liveAudioInstance
         if (!liveAudioManager) {
-           liveAudioManager =    new LiveAudioManager();
+            //@ts-ignore
+           liveAudioManager =   new LiveAudioManager({
+            onStateChange: (state) => set({connectionState: state}),
+            onError: (err) => set({error: err}),
+            onTranscript(sender, text, isPartial) {
+                return set((state) => {
+                    const newTranscript = [...state.transcript]
+
+                const existingIndex = newTranscript.findLastIndex((item) => {
+                    return (
+                        item.sender === sender && item.isPartial
+                    );
+                });
+
+                if (existingIndex !== -1) {
+                    newTranscript[existingIndex]  = {
+                        ...newTranscript[existingIndex],
+                        text, isPartial
+                    }
+                    return {transcript: newTranscript}
+                } else {
+                   if (text) {
+                     newTranscript.push({
+                        id: crypto.randomUUID(),
+                        sender,
+                        text,
+                        isPartial
+                    });
+                     return {transcript: newTranscript}
+                   }
+                }
+                })
+            },
+           });
+
+
            set({liveAudioInstance: liveAudioManager})
         }
       
