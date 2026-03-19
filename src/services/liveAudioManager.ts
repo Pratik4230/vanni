@@ -213,6 +213,22 @@ export class LiveAudioManager {
             this.mediaStream.getAudioTracks().forEach((track)=> track.enabled = !isMuted)
         }
     }
+
+    diconnect(){
+        this.stopAllAudio();
+        if (this.activeSession) {
+            this.activeSession.close();
+            this.activeSession = null;
+        }
+
+        this.inputSource?.disconnect();
+        this.workletNode?.disconnect();
+        this.outputAudioContext?.close();
+        this.inputAudioContext?.close();
+        this.outputNode?.disconnect();
+
+        this.callbacks.onStateChange(ConnectionState.DISCONNECTED)
+    }
 }
 
 

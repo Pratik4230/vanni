@@ -10,6 +10,7 @@ type AudioStore = {
     isMuted: boolean
     transcript: TranscriptItem[]
     connect: () => Promise<void>
+     diconnect: () => Promise<void>
     toggleMute: () => void
 
 };
@@ -89,6 +90,16 @@ liveAudioInstance: null,
         }
       
         liveAudioManager.startSession()
+     },
+
+     diconnect: async () => {
+const state = get();
+
+if (state.liveAudioInstance) {
+    state.liveAudioInstance.diconnect();
+    set({liveAudioInstance: undefined})
+    set({connectionState: ConnectionState.DISCONNECTED})
+}
      }
     
     }))
