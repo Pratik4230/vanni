@@ -122,8 +122,9 @@ liveAudioInstance: null,
                         isPartial
                     });
                      return {transcript: newTranscript}
-                   }
-                }
+                    }
+                    return {}
+                 }
                 })
             },
 

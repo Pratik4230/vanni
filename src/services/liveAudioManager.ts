@@ -17,7 +17,7 @@ export class LiveAudioManager {
     private nextStartTime = 0;
     private sources= new Set<AudioBufferSourceNode>();
     private callbacks : LiveManagerCallbacks;
-    private isMuted: boolean;
+    private isMuted: boolean = false;
 
     private inputTranscription = "";
     private outputTranscription =""
@@ -64,7 +64,7 @@ export class LiveAudioManager {
  
              onmessage:  this.handleMessage.bind(this),
              
-             onerror: (e) => {
+             onerror: () => {
                    this.callbacks.onStateChange(ConnectionState.ERROR);
                    this.callbacks.onError("Could not connect")
              },
