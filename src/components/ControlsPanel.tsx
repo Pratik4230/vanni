@@ -99,18 +99,14 @@ function ControlsPanel() {
               size="lg"
               className={cn(
                 "rounded-xl sm:rounded-full",
-                "h-11 px-5 sm:px-6",
-                "border-0 font-semibold text-white",
-                "shadow-md hover:opacity-90 hover:shadow-lg",
-                "transition-all duration-200 active:scale-95"
+                "h-11 px-6 sm:px-8",
+                "border border-primary/20 bg-primary/10 font-semibold text-primary",
+                "shadow-sm hover:bg-primary hover:text-primary-foreground",
+                "transition-all duration-300 active:scale-95"
               )}
-              style={{
-                background: "linear-gradient(135deg, #f97316, #ea580c)",
-                boxShadow: "0 0 20px rgb(249 115 22 / 30%)",
-              }}
             >
               <Mic className="mr-2 h-4 w-4" />
-              <span>Connect</span>
+              <span>Start Interview</span>
             </Button>
           ) : (
             <Button
@@ -130,7 +126,7 @@ function ControlsPanel() {
               ) : (
                 <PhoneOff className="mr-2 h-4 w-4" />
               )}
-              <span>{isConnecting ? "Connecting..." : "End"}</span>
+              <span>{isConnecting ? "Connecting..." : "End Interview"}</span>
             </Button>
           )}
         </div>

@@ -65,6 +65,7 @@ export class LiveAudioManager {
         callbacks: {
           onopen: () => {
             this.callbacks.onStateChange(ConnectionState.CONNECTED)
+            this.callbacks.onAgentStateChange?.("listening")
           },
 
           onmessage: this.handleMessage.bind(this),
@@ -160,6 +161,7 @@ export class LiveAudioManager {
 
     if (serverContent?.interrupted) {
       this.stopAllAudio()
+      this.callbacks.onAgentStateChange?.("listening")
     }
 
     if (serverContent?.inputTranscription?.text) {
@@ -181,12 +183,14 @@ export class LiveAudioManager {
       if (this.outputTranscription) {
         this.callbacks.onTranscript("model", this.outputTranscription, false)
         this.outputTranscription = ""
+        this.callbacks.onAgentStateChange?.("listening")
       }
     }
 
     const base64Data = serverContent?.modelTurn?.parts?.[0].inlineData?.data
 
     if (!base64Data) return
+    this.callbacks.onAgentStateChange?.("speaking")
     await this.playAudioChunk(base64Data as string)
 
     //   serverContent.inputTranscription()

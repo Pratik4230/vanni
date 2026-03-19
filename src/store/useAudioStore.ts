@@ -8,13 +8,14 @@ import { LiveAudioManager } from "@/services/liveAudioManager"
 import { ConnectionState, TranscriptItem } from "@/types"
 import { create } from "zustand"
 import { devtools } from "zustand/middleware"
-
 type AudioStore = {
   connectionState: ConnectionState
   error: string | null
   liveAudioInstance: LiveAudioManager
   isMuted: boolean
   transcript: TranscriptItem[]
+  agentState: "idle" | "listening" | "thinking" | "speaking"
+
 
   selectedLanguage: string
   selectedProficiencyLevel: string
@@ -25,6 +26,8 @@ type AudioStore = {
   setSelectedProficiencyLevel: (prof: string) => void
   setSelectedTopic: (topic: string) => void
   setSelectedVoice: (voice: string) => void
+  setAgentState: (state: "idle" | "listening" | "thinking" | "speaking") => void
+
 
   connect: () => Promise<void>
   diconnect: () => Promise<void>
@@ -37,6 +40,7 @@ export const useAudioStore = create<AudioStore>()(
     error: null,
     isMuted: false,
     transcript: [],
+    agentState: "idle",
 
     selectedLanguage: AVAILABLE_LANGUAGES[0].code,
     selectedProficiencyLevel: AVAILABLE_PROFICIENCY_LEVELS[0].label,
@@ -54,6 +58,9 @@ export const useAudioStore = create<AudioStore>()(
     },
     setSelectedVoice: (voice: string) => {
       set({ selectedVoice: voice })
+    },
+    setAgentState: (state) => {
+      set({ agentState: state })
     },
 
     toggleMute: () => {
@@ -129,6 +136,7 @@ export const useAudioStore = create<AudioStore>()(
             },
 
             onAudioLevel: () => {},
+            onAgentStateChange: (state) => set({ agentState: state }),
           },
           token.name
         )

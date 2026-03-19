@@ -5,8 +5,8 @@ import {
   Conversation,
   ConversationContent,
   ConversationEmptyState,
-} from "@/components/ai-elements/conversation"
-import { Message, MessageContent } from "@/components/ai-elements/message"
+} from "@/components/ui/conversation"
+import { Message, MessageContent } from "@/components/ui/message"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cleanText } from "@/lib/utils"
 import SidebarHeader from "./SidebarHeader"

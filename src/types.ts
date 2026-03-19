@@ -26,6 +26,7 @@ export interface LiveManagerCallbacks {
   ) => void
   onAudioLevel: (level: number, type: "input" | "output") => void
   onError: (error: string) => void
+  onAgentStateChange?: (state: "idle" | "listening" | "thinking" | "speaking") => void
 }
 
 export interface ConnectConfig {

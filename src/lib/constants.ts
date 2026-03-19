@@ -3,12 +3,12 @@ export const INPUT_SAMPLE_RATE = 16000
 export const OUTPUT_SAMPLE_RATE = 24000
 
 export const AVAILABLE_TOPICS = [
+  "Full Stack Development",
   "Frontend Engineering",
   "Backend Engineering",
   "System Design",
   "Behavioral (HR)",
   "Data Structures & Algorithms",
-  "Full Stack Development",
 ]
 
 // BCP 47 Standard: Language-Region
@@ -34,7 +34,11 @@ export const AVAILABLE_VOICES = [
   { id: "aoede", name: "Aoede", category: "Female HR (Warm & Welcoming)" },
   { id: "kore", name: "Kore", category: "Female HR (Firm & Direct)" },
   { id: "puck", name: "Puck", category: "Male HR (Friendly & Upbeat)" },
-  { id: "charon", name: "Charon", category: "Male HR (Senior & Authoritative)" },
+  {
+    id: "charon",
+    name: "Charon",
+    category: "Male HR (Senior & Authoritative)",
+  },
   { id: "fenrir", name: "Fenrir", category: "Male HR (Energetic)" },
 ]
 

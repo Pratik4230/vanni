@@ -1,26 +1,28 @@
 "use client"
 
-import { Persona, type PersonaState } from "@/components/ai-elements/persona"
+import { Orb } from "@/components/ui/orb"
+import { useAudioStore } from "@/store/useAudioStore"
+import { ConnectionState } from "@/types"
 
 function VisualizationPanel() {
-  const isConnected = true
-  // const isConnecting = false;
-  const agentState = "talking"
+  const { connectionState, agentState } = useAudioStore()
+  
+  const isConnected = connectionState === ConnectionState.CONNECTED
 
-  const personaState: PersonaState = !isConnected
-    ? "idle"
-    : agentState === "talking"
-      ? "speaking"
+  const orbState = !isConnected
+    ? null
+    : agentState === "speaking"
+      ? "talking"
       : agentState === "thinking"
         ? "thinking"
         : "listening"
 
   return (
     <div className="relative z-10 flex w-full items-center justify-center">
-      <Persona
-        variant="glint"
-        state={personaState}
-        className="size-48! sm:size-64!"
+      <Orb
+        agentState={orbState}
+        className="size-48! sm:size-72!"
+        colors={["#f97316", "#fb923c"]} // Matching the brand's potential orange theme, or maybe keep default? Let's use clean defaults or let Orb use its own default
       />
     </div>
   )
