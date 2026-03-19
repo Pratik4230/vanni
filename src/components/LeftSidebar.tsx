@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   Settings2,
@@ -8,9 +8,9 @@ import {
   Mic,
   Palette,
   LucideIcon,
-} from "lucide-react";
+} from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 import {
   Select,
@@ -19,54 +19,66 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"
 
 import {
   AVAILABLE_LANGUAGES,
   AVAILABLE_VOICES,
   AVAILABLE_PROFICIENCY_LEVELS,
   AVAILABLE_TOPICS,
-} from "@/lib/constants";
+} from "@/lib/constants"
 
-import { ModeToggle } from "./ModeToggle";
-import SidebarHeader from "./SidebarHeader";
-import { useAudioStore } from "@/store/useAudioStore";
+import { ModeToggle } from "./ModeToggle"
+import SidebarHeader from "./SidebarHeader"
+import { useAudioStore } from "@/store/useAudioStore"
 
 function SectionLabel({
   icon: Icon,
   children,
 }: {
-  icon: LucideIcon;
-  children: React.ReactNode;
+  icon: LucideIcon
+  children: React.ReactNode
 }) {
   return (
-    <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground mb-2.5 uppercase tracking-wider">
+    <div className="mb-2.5 flex items-center gap-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
       <Icon className="h-3.5 w-3.5 text-primary opacity-80" />
       {children}
     </div>
-  );
+  )
 }
 
 function LeftSidebar() {
+  const {
+    selectedLanguage,
+    selectedProficiencyLevel,
+    selectedTopic,
+    selectedVoice,
+    setSelectedLanguage,
+    setSelectedProficiencyLevel,
+    setSelectedTopic,
+    setSelectedVoice,
+  } = useAudioStore()
 
-  const {selectedLanguage, selectedProficiencyLevel, selectedTopic, selectedVoice, setSelectedLanguage, setSelectedProficiencyLevel, setSelectedTopic, setSelectedVoice} = useAudioStore();
-
-  const disabled = false;
+  const disabled = false
 
   const triggerClass = cn(
     "h-10 w-full justify-between",
-    "text-sm font-medium rounded-lg",
-    "border-border hover:border-primary/40 transition-colors",
-    disabled && "opacity-50 cursor-not-allowed",
-  );
+    "rounded-lg text-sm font-medium",
+    "border-border transition-colors hover:border-primary/40",
+    disabled && "cursor-not-allowed opacity-50"
+  )
 
   return (
     <aside className="flex h-full w-full flex-col bg-sidebar text-sidebar-foreground">
       <SidebarHeader icon={Settings2} title="Configuration" />
-      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+      <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5">
         <div>
           <SectionLabel icon={Globe}>Language</SectionLabel>
-          <Select value={selectedLanguage} onValueChange={setSelectedLanguage} disabled={disabled}>
+          <Select
+            value={selectedLanguage}
+            onValueChange={setSelectedLanguage}
+            disabled={disabled}
+          >
             <SelectTrigger className={triggerClass}>
               <SelectValue placeholder="Select language" />
             </SelectTrigger>
@@ -75,8 +87,12 @@ function LeftSidebar() {
                 {AVAILABLE_LANGUAGES.map((lang) => (
                   <SelectItem key={lang.id} value={lang.code}>
                     <div className="flex w-full items-center justify-between gap-2">
-                      <span className="text-sm font-medium truncate">{lang.name}</span>
-                      <span className="text-xs text-muted-foreground truncate opacity-70">{lang.region}</span>
+                      <span className="truncate text-sm font-medium">
+                        {lang.name}
+                      </span>
+                      <span className="truncate text-xs text-muted-foreground opacity-70">
+                        {lang.region}
+                      </span>
                     </div>
                   </SelectItem>
                 ))}
@@ -87,7 +103,11 @@ function LeftSidebar() {
 
         <div>
           <SectionLabel icon={GraduationCap}>Skill Level</SectionLabel>
-          <Select value={selectedProficiencyLevel} onValueChange={setSelectedProficiencyLevel} disabled={disabled}>
+          <Select
+            value={selectedProficiencyLevel}
+            onValueChange={setSelectedProficiencyLevel}
+            disabled={disabled}
+          >
             <SelectTrigger className={triggerClass}>
               <SelectValue placeholder="Select level" />
             </SelectTrigger>
@@ -103,7 +123,11 @@ function LeftSidebar() {
 
         <div>
           <SectionLabel icon={MessageSquare}>Conversation Topic</SectionLabel>
-          <Select value={selectedTopic} onValueChange={setSelectedTopic} disabled={disabled}>
+          <Select
+            value={selectedTopic}
+            onValueChange={setSelectedTopic}
+            disabled={disabled}
+          >
             <SelectTrigger className={triggerClass}>
               <SelectValue placeholder="Select topic" />
             </SelectTrigger>
@@ -119,16 +143,20 @@ function LeftSidebar() {
 
         <div>
           <SectionLabel icon={Mic}>AI Voice Persona</SectionLabel>
-          <Select value={selectedVoice} onValueChange={setSelectedVoice} disabled={disabled}>
+          <Select
+            value={selectedVoice}
+            onValueChange={setSelectedVoice}
+            disabled={disabled}
+          >
             <SelectTrigger className={triggerClass}>
               <SelectValue placeholder="Select voice" />
             </SelectTrigger>
             <SelectContent>
               {AVAILABLE_VOICES.map((voice) => (
                 <SelectItem key={voice.id} value={voice.name}>
-                  <div className="flex items-center justify-between w-full gap-4">
+                  <div className="flex w-full items-center justify-between gap-4">
                     <span className="font-medium">{voice.name}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded font-semibold">
+                    <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-primary uppercase">
                       {voice.category}
                     </span>
                   </div>
@@ -149,7 +177,7 @@ function LeftSidebar() {
         </div>
       </div>
     </aside>
-  );
+  )
 }
 
-export default LeftSidebar;
+export default LeftSidebar

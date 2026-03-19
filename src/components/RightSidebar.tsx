@@ -1,22 +1,19 @@
-"use client";
+"use client"
 
-import { LucideLanguages } from "lucide-react";
+import { LucideLanguages } from "lucide-react"
 import {
   Conversation,
   ConversationContent,
   ConversationEmptyState,
-} from "@/components/ai-elements/conversation";
-import {
-  Message,
-  MessageContent,
-} from "@/components/ai-elements/message";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cleanText } from "@/lib/utils";
-import SidebarHeader from "./SidebarHeader";
-import { useAudioStore } from "@/store/useAudioStore";
+} from "@/components/ai-elements/conversation"
+import { Message, MessageContent } from "@/components/ai-elements/message"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { cleanText } from "@/lib/utils"
+import SidebarHeader from "./SidebarHeader"
+import { useAudioStore } from "@/store/useAudioStore"
 
 function RightSidebar() {
-  const {transcript: items} = useAudioStore()
+  const { transcript: items } = useAudioStore()
   // const items: { text: string; isPartial: boolean; sender: string }[] = [
   //   { text: "Hii", isPartial: false, sender: "user" },
   //   { text: "I'm Vanni AI Assistant", isPartial: false, sender: "assistant" },
@@ -39,9 +36,9 @@ function RightSidebar() {
               </div>
             ) : (
               items.map((message, i) => {
-                const cleanedText = cleanText(message.text);
-                if (!cleanedText && !message.isPartial) return null;
-                const isUser = message.sender === "user";
+                const cleanedText = cleanText(message.text)
+                if (!cleanedText && !message.isPartial) return null
+                const isUser = message.sender === "user"
                 return (
                   <Message key={i} from={isUser ? "user" : "assistant"}>
                     <MessageContent
@@ -53,7 +50,7 @@ function RightSidebar() {
                     >
                       {cleanedText}
                       {message.isPartial && !isUser && (
-                        <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full opacity-60 animate-bounce align-baseline" />
+                        <span className="ml-1 inline-block h-1.5 w-1.5 animate-bounce rounded-full align-baseline opacity-60" />
                       )}
                     </MessageContent>
 
@@ -64,14 +61,14 @@ function RightSidebar() {
                       </Avatar>
                     )}
                   </Message>
-                );
+                )
               })
             )}
           </ConversationContent>
         </Conversation>
       </div>
     </aside>
-  );
+  )
 }
 
-export default RightSidebar;
+export default RightSidebar

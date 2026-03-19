@@ -1,7 +1,6 @@
-export const MODEL = "gemini-2.5-flash-native-audio-preview-09-2025";
-export const INPUT_SAMPLE_RATE = 16000;
-export const OUTPUT_SAMPLE_RATE = 24000;
-
+export const MODEL = "gemini-2.5-flash-native-audio-preview-09-2025"
+export const INPUT_SAMPLE_RATE = 16000
+export const OUTPUT_SAMPLE_RATE = 24000
 
 export const AVAILABLE_TOPICS = [
   "Free Chat",
@@ -11,7 +10,7 @@ export const AVAILABLE_TOPICS = [
   "Ordering Food",
   "Daily Routine",
   "Movies & Hobbies",
-];
+]
 
 // BCP 47 Standard: Language-Region
 export const AVAILABLE_LANGUAGES = [
@@ -26,7 +25,7 @@ export const AVAILABLE_LANGUAGES = [
   { id: "zh-CN", name: "Chinese", region: "China (Mandarin)", code: "zh-CN" },
   { id: "hi-IN", name: "Hindi", region: "India", code: "hi-IN" },
   { id: "pt-BR", name: "Portuguese", region: "Brazil", code: "pt-BR" },
-];
+]
 
 export const AVAILABLE_VOICES = [
   { id: "charon", name: "Charon", category: "informative" },
@@ -34,7 +33,7 @@ export const AVAILABLE_VOICES = [
   { id: "kore", name: "Kore", category: "firm" },
   { id: "fenrir", name: "Fenrir", category: "excitable" },
   { id: "aoede", name: "Aoede", category: "confident" },
-];
+]
 
 export const AVAILABLE_PROFICIENCY_LEVELS = [
   {
@@ -52,4 +51,4 @@ export const AVAILABLE_PROFICIENCY_LEVELS = [
     label: "Top Class",
     description: "I can discuss most topics in detail",
   },
-];
+]

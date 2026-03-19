@@ -1,172 +1,164 @@
-import { AVAILABLE_LANGUAGES, AVAILABLE_PROFICIENCY_LEVELS, AVAILABLE_TOPICS, AVAILABLE_VOICES } from "@/lib/constants";
-import { LiveAudioManager } from "@/services/liveAudioManager";
-import { ConnectionState, TranscriptItem } from "@/types";
-import {create} from "zustand";
-import { devtools } from "zustand/middleware";
+import {
+  AVAILABLE_LANGUAGES,
+  AVAILABLE_PROFICIENCY_LEVELS,
+  AVAILABLE_TOPICS,
+  AVAILABLE_VOICES,
+} from "@/lib/constants"
+import { LiveAudioManager } from "@/services/liveAudioManager"
+import { ConnectionState, TranscriptItem } from "@/types"
+import { create } from "zustand"
+import { devtools } from "zustand/middleware"
 
 type AudioStore = {
-    connectionState: ConnectionState;
-    error: string | null;
-    liveAudioInstance: LiveAudioManager;
-    isMuted: boolean
-    transcript: TranscriptItem[]
+  connectionState: ConnectionState
+  error: string | null
+  liveAudioInstance: LiveAudioManager
+  isMuted: boolean
+  transcript: TranscriptItem[]
 
-    selectedLanguage: string;
-    selectedProficiencyLevel: string;
-    selectedTopic: string;
-    selectedVoice: string;
+  selectedLanguage: string
+  selectedProficiencyLevel: string
+  selectedTopic: string
+  selectedVoice: string
 
-    setSelectedLanguage: (lang: string) => void;
-    setSelectedProficiencyLevel: (prof: string) => void;
-    setSelectedTopic: (topic: string) => void;
-    setSelectedVoice: (voice: string) => void;
+  setSelectedLanguage: (lang: string) => void
+  setSelectedProficiencyLevel: (prof: string) => void
+  setSelectedTopic: (topic: string) => void
+  setSelectedVoice: (voice: string) => void
 
-    connect: () => Promise<void>
-     diconnect: () => Promise<void>
-    toggleMute: () => void
-
-};
+  connect: () => Promise<void>
+  diconnect: () => Promise<void>
+  toggleMute: () => void
+}
 
 export const useAudioStore = create<AudioStore>()(
-    devtools((set, get) => ({
+  devtools((set, get) => ({
+    connectionState: ConnectionState.DISCONNECTED,
+    error: null,
+    isMuted: false,
+    transcript: [],
 
-connectionState: ConnectionState.DISCONNECTED,        
-error: null,
-isMuted: false,
-transcript: [],
-
-   selectedLanguage: AVAILABLE_LANGUAGES[0].code,
+    selectedLanguage: AVAILABLE_LANGUAGES[0].code,
     selectedProficiencyLevel: AVAILABLE_PROFICIENCY_LEVELS[0].label,
     selectedTopic: AVAILABLE_TOPICS[0],
     selectedVoice: AVAILABLE_VOICES[0].name,
 
-
     setSelectedLanguage: (lang: string) => {
-      set({selectedLanguage: lang})
+      set({ selectedLanguage: lang })
     },
     setSelectedProficiencyLevel: (prof: string) => {
-set({selectedProficiencyLevel: prof})
+      set({ selectedProficiencyLevel: prof })
     },
     setSelectedTopic: (topic: string) => {
-  set({selectedTopic:topic})
+      set({ selectedTopic: topic })
     },
     setSelectedVoice: (voice: string) => {
-    set({selectedVoice:voice})
+      set({ selectedVoice: voice })
     },
 
+    toggleMute: () => {
+      const state = get()
+      set({ isMuted: !state.isMuted })
+      state.liveAudioInstance.setMute(!state.isMuted)
+    },
+    liveAudioInstance: null,
+    connect: async () => {
+      const state = get()
 
-toggleMute: () => {
-const state = get();
-set({isMuted: !state.isMuted});
-state.liveAudioInstance.setMute(!state.isMuted);
-},
-liveAudioInstance: null,
-     connect: async () => {
-
-        const state =  get();
-
-      
-      const response = await fetch("/api/token");
+      const response = await fetch("/api/token")
       if (!response.ok) {
-        set({ error: "failed to generate token" });
+        set({ error: "failed to generate token" })
 
-        return;
+        return
       }
 
-      const { token } = await response.json();
+      const { token } = await response.json()
 
-        if (state.connectionState === ConnectionState.CONNECTING || state.connectionState === ConnectionState.CONNECTED) {
-            return;
-        }
+      if (
+        state.connectionState === ConnectionState.CONNECTING ||
+        state.connectionState === ConnectionState.CONNECTED
+      ) {
+        return
+      }
 
-        set({error: null});
+      set({ error: null })
 
-        //check microphone permission
-        try {
-            await navigator.mediaDevices.getUserMedia({
-                audio: true
-            })
-        } catch  {
-         set({error: "Microphone permission denied"})   
-        }
+      //check microphone permission
+      try {
+        await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        })
+      } catch {
+        set({ error: "Microphone permission denied" })
+      }
 
-       
-        let liveAudioManager = state.liveAudioInstance
-        if (!liveAudioManager) {
-          
-           liveAudioManager =   new LiveAudioManager({
-            onStateChange: (state) => set({connectionState: state}),
-            onError: (err) => set({error: err}),
+      let liveAudioManager = state.liveAudioInstance
+      if (!liveAudioManager) {
+        liveAudioManager = new LiveAudioManager(
+          {
+            onStateChange: (state) => set({ connectionState: state }),
+            onError: (err) => set({ error: err }),
             onTranscript(sender, text, isPartial) {
-                return set((state) => {
-                    const newTranscript = [...state.transcript]
+              return set((state) => {
+                const newTranscript = [...state.transcript]
 
                 const existingIndex = newTranscript.findLastIndex((item) => {
-                    return (
-                        item.sender === sender && item.isPartial
-                    );
-                });
+                  return item.sender === sender && item.isPartial
+                })
 
                 if (existingIndex !== -1) {
-                    newTranscript[existingIndex]  = {
-                        ...newTranscript[existingIndex],
-                        text, isPartial
-                    }
-                    return {transcript: newTranscript}
+                  newTranscript[existingIndex] = {
+                    ...newTranscript[existingIndex],
+                    text,
+                    isPartial,
+                  }
+                  return { transcript: newTranscript }
                 } else {
-                   if (text) {
-                     newTranscript.push({
-                        id: crypto.randomUUID(),
-                        sender,
-                        text,
-                        isPartial
-                    });
-                     return {transcript: newTranscript}
-                    }
-                    return {}
-                 }
-                })
+                  if (text) {
+                    newTranscript.push({
+                      id: crypto.randomUUID(),
+                      sender,
+                      text,
+                      isPartial,
+                    })
+                    return { transcript: newTranscript }
+                  }
+                  return {}
+                }
+              })
             },
 
-            onAudioLevel: () => {}
-           },
+            onAudioLevel: () => {},
+          },
           token.name
-          );
+        )
 
+        set({ liveAudioInstance: liveAudioManager })
+      }
 
-           set({liveAudioInstance: liveAudioManager})
-        }
-
-         const selectedLang = AVAILABLE_LANGUAGES.find(
-        (l) => l.code === state.selectedLanguage,
-      );
+      const selectedLang = AVAILABLE_LANGUAGES.find(
+        (l) => l.code === state.selectedLanguage
+      )
       // create session
       liveAudioManager.startSession({
-        selected_assistant_voice:
-          state.selectedVoice,
-        selected_launguage_code:
-          selectedLang?.code || "en-US",
-        selected_launguage_name:
-          selectedLang?.name || "English",
-        selected_launguage_region:
-          selectedLang?.region || "US",
+        selected_assistant_voice: state.selectedVoice,
+        selected_launguage_code: selectedLang?.code || "en-US",
+        selected_launguage_name: selectedLang?.name || "English",
+        selected_launguage_region: selectedLang?.region || "US",
         description: state.selectedTopic,
         selected_topic: state.selectedTopic,
-        selected_proefficent_level:
-          state.selectedProficiencyLevel,
-      });
-      
-     },
+        selected_proefficent_level: state.selectedProficiencyLevel,
+      })
+    },
 
-     diconnect: async () => {
-const state = get();
+    diconnect: async () => {
+      const state = get()
 
-if (state.liveAudioInstance) {
-    state.liveAudioInstance.diconnect();
-    set({liveAudioInstance: undefined})
-    set({connectionState: ConnectionState.DISCONNECTED})
-}
-     }
-    
-    }))
+      if (state.liveAudioInstance) {
+        state.liveAudioInstance.diconnect()
+        set({ liveAudioInstance: undefined })
+        set({ connectionState: ConnectionState.DISCONNECTED })
+      }
+    },
+  }))
 )
