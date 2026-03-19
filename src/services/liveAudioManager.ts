@@ -241,6 +241,10 @@ export class LiveAudioManager {
     }
   }
 
+  getMediaStream(): MediaStream | null {
+    return this.mediaStream
+  }
+
   setMute(isMuted: boolean) {
     this.isMuted = isMuted
 

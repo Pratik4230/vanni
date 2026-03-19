@@ -15,6 +15,7 @@ type AudioStore = {
   isMuted: boolean
   transcript: TranscriptItem[]
   agentState: "idle" | "listening" | "thinking" | "speaking"
+  mediaStream: MediaStream | null
 
 
   selectedLanguage: string
@@ -41,6 +42,7 @@ export const useAudioStore = create<AudioStore>()(
     isMuted: false,
     transcript: [],
     agentState: "idle",
+    mediaStream: null,
 
     selectedLanguage: AVAILABLE_LANGUAGES[0].code,
     selectedProficiencyLevel: AVAILABLE_PROFICIENCY_LEVELS[0].label,
@@ -157,6 +159,10 @@ export const useAudioStore = create<AudioStore>()(
         selected_topic: state.selectedTopic,
         selected_proefficent_level: state.selectedProficiencyLevel,
       })
+
+      setTimeout(() => {
+        set({ mediaStream: liveAudioManager.getMediaStream() })
+      }, 1000)
     },
 
     diconnect: async () => {
@@ -164,7 +170,7 @@ export const useAudioStore = create<AudioStore>()(
 
       if (state.liveAudioInstance) {
         state.liveAudioInstance.diconnect()
-        set({ liveAudioInstance: undefined })
+        set({ liveAudioInstance: undefined, mediaStream: null, agentState: "idle" })
         set({ connectionState: ConnectionState.DISCONNECTED })
       }
     },

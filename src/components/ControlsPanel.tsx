@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Loader2, Mic, MicOff, PhoneOff } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { BarVisualizer } from "@/components/ui/bar-visualizer"
 import {
   MicSelector,
   MicSelectorContent,
@@ -22,10 +23,20 @@ function ControlsPanel() {
   const [selectedDevice, setSelectedDevice] = useState<string | undefined>(
     undefined
   )
-  const { connect, connectionState, toggleMute, isMuted, diconnect } =
+  const { connect, connectionState, toggleMute, isMuted, diconnect, mediaStream, agentState } =
     useAudioStore()
   const isConnected = connectionState === ConnectionState.CONNECTED
   const isConnecting = connectionState === ConnectionState.CONNECTING
+
+  const barState = isMuted
+    ? undefined
+    : agentState === "speaking"
+      ? "speaking"
+      : agentState === "thinking"
+        ? "thinking"
+        : isConnected
+          ? "listening"
+          : undefined
 
   return (
     <div className="mx-auto w-full max-w-[92vw] sm:max-w-fit">
@@ -69,6 +80,20 @@ function ControlsPanel() {
             </MicSelectorContent>
           </MicSelector>
         </div>
+
+        <div className="mx-1 hidden h-7 w-px bg-border sm:block" />
+
+        {isConnected && (
+          <BarVisualizer
+            state={barState}
+            mediaStream={isMuted ? null : mediaStream}
+            barCount={20}
+            minHeight={15}
+            maxHeight={85}
+            centerAlign
+            className="h-10 w-28 rounded-full border border-border/40 bg-transparent p-2"
+          />
+        )}
 
         <div className="mx-1 hidden h-7 w-px bg-border sm:block" />
 
