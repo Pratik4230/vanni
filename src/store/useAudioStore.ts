@@ -65,6 +65,16 @@ liveAudioInstance: null,
 
         const state =  get();
 
+      
+      const response = await fetch("/api/token");
+      if (!response.ok) {
+        set({ error: "failed to generate token" });
+
+        return;
+      }
+
+      const { token } = await response.json();
+
         if (state.connectionState === ConnectionState.CONNECTING || state.connectionState === ConnectionState.CONNECTED) {
             return;
         }
@@ -83,7 +93,7 @@ liveAudioInstance: null,
        
         let liveAudioManager = state.liveAudioInstance
         if (!liveAudioManager) {
-            //@ts-ignore
+          
            liveAudioManager =   new LiveAudioManager({
             onStateChange: (state) => set({connectionState: state}),
             onError: (err) => set({error: err}),
@@ -116,7 +126,11 @@ liveAudioInstance: null,
                 }
                 })
             },
-           });
+
+            onAudioLevel: () => {}
+           },
+          token.name
+          );
 
 
            set({liveAudioInstance: liveAudioManager})

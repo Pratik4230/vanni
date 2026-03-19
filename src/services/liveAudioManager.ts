@@ -22,13 +22,17 @@ export class LiveAudioManager {
     private inputTranscription = "";
     private outputTranscription =""
 
-    constructor(callbacks: LiveManagerCallbacks) {
-        this.ai = new GoogleGenAI({
-                 apiKey:process.env.NEXT_PUBLIC_GEMINI_API_KEY
-        });
+     constructor(
+    callbacks: LiveManagerCallbacks,
+    token: string,
+  ) {
+    this.ai = new GoogleGenAI({
+      apiKey: token,
+      apiVersion: "v1alpha",
+    });
 
-        this.callbacks = callbacks
-    }
+    this.callbacks = callbacks;
+  }
 
     async startSession(connectConfig: ConnectConfig){
    try {
