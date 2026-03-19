@@ -30,6 +30,7 @@ import {
 
 import { ModeToggle } from "./ModeToggle";
 import SidebarHeader from "./SidebarHeader";
+import { useAudioStore } from "@/store/useAudioStore";
 
 function SectionLabel({
   icon: Icon,
@@ -47,6 +48,9 @@ function SectionLabel({
 }
 
 function LeftSidebar() {
+
+  const {selectedLanguage, selectedProficiencyLevel, selectedTopic, selectedVoice, setSelectedLanguage, setSelectedProficiencyLevel, setSelectedTopic, setSelectedVoice} = useAudioStore();
+
   const disabled = false;
 
   const triggerClass = cn(
@@ -62,7 +66,7 @@ function LeftSidebar() {
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
         <div>
           <SectionLabel icon={Globe}>Language</SectionLabel>
-          <Select value={""} onValueChange={() => {}} disabled={disabled}>
+          <Select value={selectedLanguage} onValueChange={setSelectedLanguage} disabled={disabled}>
             <SelectTrigger className={triggerClass}>
               <SelectValue placeholder="Select language" />
             </SelectTrigger>
@@ -83,7 +87,7 @@ function LeftSidebar() {
 
         <div>
           <SectionLabel icon={GraduationCap}>Skill Level</SectionLabel>
-          <Select value={""} onValueChange={() => {}} disabled={disabled}>
+          <Select value={selectedProficiencyLevel} onValueChange={setSelectedProficiencyLevel} disabled={disabled}>
             <SelectTrigger className={triggerClass}>
               <SelectValue placeholder="Select level" />
             </SelectTrigger>
@@ -99,7 +103,7 @@ function LeftSidebar() {
 
         <div>
           <SectionLabel icon={MessageSquare}>Conversation Topic</SectionLabel>
-          <Select value={""} onValueChange={() => {}} disabled={disabled}>
+          <Select value={selectedTopic} onValueChange={setSelectedTopic} disabled={disabled}>
             <SelectTrigger className={triggerClass}>
               <SelectValue placeholder="Select topic" />
             </SelectTrigger>
@@ -115,7 +119,7 @@ function LeftSidebar() {
 
         <div>
           <SectionLabel icon={Mic}>AI Voice Persona</SectionLabel>
-          <Select value={""} onValueChange={() => {}} disabled={disabled}>
+          <Select value={selectedVoice} onValueChange={setSelectedVoice} disabled={disabled}>
             <SelectTrigger className={triggerClass}>
               <SelectValue placeholder="Select voice" />
             </SelectTrigger>

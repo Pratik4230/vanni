@@ -1,3 +1,4 @@
+import { AVAILABLE_LANGUAGES, AVAILABLE_PROFICIENCY_LEVELS, AVAILABLE_TOPICS, AVAILABLE_VOICES } from "@/lib/constants";
 import { LiveAudioManager } from "@/services/liveAudioManager";
 import { ConnectionState, TranscriptItem } from "@/types";
 import {create} from "zustand";
@@ -9,6 +10,17 @@ type AudioStore = {
     liveAudioInstance: LiveAudioManager;
     isMuted: boolean
     transcript: TranscriptItem[]
+
+    selectedLanguage: string;
+    selectedProficiencyLevel: string;
+    selectedTopic: string;
+    selectedVoice: string;
+
+    setSelectedLanguage: (lang: string) => void;
+    setSelectedProficiencyLevel: (prof: string) => void;
+    setSelectedTopic: (topic: string) => void;
+    setSelectedVoice: (voice: string) => void;
+
     connect: () => Promise<void>
      diconnect: () => Promise<void>
     toggleMute: () => void
@@ -22,6 +34,27 @@ connectionState: ConnectionState.DISCONNECTED,
 error: null,
 isMuted: false,
 transcript: [],
+
+   selectedLanguage: AVAILABLE_LANGUAGES[0].code,
+    selectedProficiencyLevel: AVAILABLE_PROFICIENCY_LEVELS[0].label,
+    selectedTopic: AVAILABLE_TOPICS[0],
+    selectedVoice: AVAILABLE_VOICES[0].name,
+
+
+    setSelectedLanguage: (lang: string) => {
+      set({selectedLanguage: lang})
+    },
+    setSelectedProficiencyLevel: (prof: string) => {
+set({selectedProficiencyLevel: prof})
+    },
+    setSelectedTopic: (topic: string) => {
+  set({selectedTopic:topic})
+    },
+    setSelectedVoice: (voice: string) => {
+    set({selectedVoice:voice})
+    },
+
+
 toggleMute: () => {
 const state = get();
 set({isMuted: !state.isMuted});
@@ -88,8 +121,26 @@ liveAudioInstance: null,
 
            set({liveAudioInstance: liveAudioManager})
         }
+
+         const selectedLang = AVAILABLE_LANGUAGES.find(
+        (l) => l.code === state.selectedLanguage,
+      );
+      // create session
+      liveAudioManager.startSession({
+        selected_assistant_voice:
+          state.selectedVoice,
+        selected_launguage_code:
+          selectedLang?.code || "en-US",
+        selected_launguage_name:
+          selectedLang?.name || "English",
+        selected_launguage_region:
+          selectedLang?.region || "US",
+        description: state.selectedTopic,
+        selected_topic: state.selectedTopic,
+        selected_proefficent_level:
+          state.selectedProficiencyLevel,
+      });
       
-        liveAudioManager.startSession()
      },
 
      diconnect: async () => {

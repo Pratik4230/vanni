@@ -37,7 +37,7 @@ export interface ConnectConfig {
   selected_launguage_code: string;
   selected_launguage_region: string;
 
-  context: string;
+
   selected_proefficent_level: string;
   selected_assistant_voice: string;
 }
